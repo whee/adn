@@ -1,35 +1,39 @@
 package adn
 
+import (
+	"time"
+)
+
 type Post struct {
-	Id        string
-	User      User
-	CreatedAt string
-	Text      string
-	Html      string
-	Source    interface{} // TODO implement
-	ReplyTo   string
-	ThreadId  string
+	Id        string    `json:"id"`
+	User      User      `json:"user"`
+	CreatedAt time.Time `json:"created_at"`
+	Text      string    `json:"text"`
+	HTML      string    `json:"html"`
+	Source    Source    `json:"source"`
+	ReplyTo   string    `json:"reply_to"`
+	ThreadId  string    `json:"thread_id"`
 
-	NumReplies int
-	NumStars   int
-	NumReposts int
+	NumReplies int `json:"num_replies"`
+	NumStars   int `json:"num_stars"`
+	NumReposts int `json:"num_reposts"`
 
-	Annotations []interface{} // TODO implement
+	Annotations []interface{} `json:"annotations"` // TODO implement
 
-	Entities interface{} // TODO implement
+	Entities Entities `json:"entities"`
 
-	IsDeleted   bool
-	MachineOnly bool
+	IsDeleted   bool `json:"is_deleted"`
+	MachineOnly bool `json:"machine_only"`
 
-	YouStarred bool
-	StarredBy  []string // TODO verify
+	YouStarred bool     `json:"you_starred"`
+	StarredBy  []string `json:"starred_by"` // TODO verify
 
-	YouReposted bool
-	Reposters   []string // TODO verify
-	RepostOf    *Post    // TODO verify self-reference
+	YouReposted bool     `json:"you_reposted"`
+	Reposters   []string `json:"reposters"` // TODO verify
+	RepostOf    *Post    `json:"repost_of"` // TODO verify self-reference
 }
 
 type Source struct {
-	Name string
-	Link string
+	Name string `json:"name"`
+	Link string `json:"link"`
 }
