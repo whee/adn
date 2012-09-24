@@ -40,3 +40,8 @@ type Counts struct {
 	Posts     int `json:"posts"`
 	Stars     int `json:"stars"`
 }
+
+// Get will not actually work until authentication is implemented.
+func (u *User) Get(id string) error {
+	return epExecuteGet("retrieve user", epArgs{User: id}, u)
+}

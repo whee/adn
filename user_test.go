@@ -70,3 +70,12 @@ func TestUserDecode(t *testing.T) {
 		t.Error("json.Unmarshal(testUserData)", err)
 	}
 }
+
+func TestUserGet(t *testing.T) {
+	u := &User{}
+	// Not authenticated. This should fail.
+	err := u.Get("@whee")
+	if err == nil {
+		t.Error("unauthenticated User.Get() should have failed", err)
+	}
+}

@@ -2,7 +2,10 @@ package adn
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"text/template"
 )
@@ -86,6 +89,23 @@ func init() {
 	}
 }
 
+type responseEnvelope struct {
+	Data interface{}  `json:"data"`
+	Meta responseMeta `json:"meta"`
+}
+
+type responseMeta struct {
+	Code         int    `json:"code"`
+	ErrorId      string `json:"error_id"`
+	ErrorMessage string `json:"error_message"`
+}
+
+type APIError responseMeta
+
+func (e APIError) Error() string {
+	return fmt.Sprintf("%d: %s (%s)", e.Code, e.ErrorMessage, e.ErrorId)
+}
+
 var apiClient = &http.Client{}
 
 func epExecute(name string, args epArgs) (body io.ReadCloser, err error) {
@@ -102,6 +122,7 @@ func epExecute(name string, args epArgs) (body io.ReadCloser, err error) {
 	if err != nil {
 		return
 	}
+	req.Header.Add("X-ADN-Migration-Overrides", "response_envelope=1")
 
 	resp, err := apiClient.Do(req)
 	if err != nil {
@@ -110,4 +131,29 @@ func epExecute(name string, args epArgs) (body io.ReadCloser, err error) {
 	body = resp.Body
 
 	return
+}
+
+func epExecuteGet(name string, args epArgs, v interface{}) error {
+	body, err := epExecute(name, args)
+	if err != nil {
+		return err
+	}
+	defer body.Close()
+
+	resp, err := ioutil.ReadAll(body)
+	if err != nil {
+		return err
+	}
+
+	re := &responseEnvelope{Data: v}
+	err = json.Unmarshal(resp, re)
+	if err != nil {
+		return err
+	}
+
+	if re.Meta.ErrorId != "" {
+		return APIError(re.Meta)
+	}
+
+	return err
 }
