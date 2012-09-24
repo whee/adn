@@ -22,8 +22,6 @@ type endpoint struct {
 	Path   string
 }
 
-var epTemplates = new(template.Template)
-
 var apiEndpoints = map[string]endpoint{
 	// Users
 	"retrieve user":        {httpGet, "/stream/0/users/{{.User}}"},
@@ -79,6 +77,8 @@ var apiEndpoints = map[string]endpoint{
 type epArgs struct {
 	User, Post, Hashtag, Stream, Subscription, Filter string
 }
+
+var epTemplates = new(template.Template)
 
 func init() {
 	for k, v := range apiEndpoints {

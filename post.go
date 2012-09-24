@@ -1,6 +1,8 @@
 package adn
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"time"
 )
 
@@ -36,4 +38,24 @@ type Post struct {
 type Source struct {
 	Name string `json:"name"`
 	Link string `json:"link"`
+}
+
+func (p *Post) Get(id string) error {
+	body, err := epExecute("retrieve post", epArgs{Post: id})
+	if err != nil {
+		return err
+	}
+	defer body.Close()
+
+	resp, err := ioutil.ReadAll(body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(resp, p)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -10,7 +10,7 @@ var testPostData = []byte(`
     "created_at":"2012-09-21T00:13:05Z",
     "entities":{
       "hashtags":[
-        
+
       ],
       "links":[
         {
@@ -27,7 +27,7 @@ var testPostData = []byte(`
         }
       ],
       "mentions":[
-        
+
       ]
     },
     "html":"<span itemscope=\"https:\/\/app.net\/schemas\/Post\">Nope, nothing ironic about this rolling out today: <a href=\"http:\/\/tcrn.ch\/UlUQZv\">http:\/\/tcrn.ch\/UlUQZv<\/a>\n\n<a href=\"http:\/\/bit.ly\/SG83ej\">http:\/\/bit.ly\/SG83ej<\/a><\/span>",
@@ -64,7 +64,7 @@ var testPostData = []byte(`
       "description":{
         "entities":{
           "hashtags":[
-            
+
           ],
           "links":[
             {
@@ -81,7 +81,7 @@ var testPostData = []byte(`
             }
           ],
           "mentions":[
-            
+
           ]
         },
         "html":"<span itemscope=\"https:\/\/app.net\/schemas\/Post\">Founder\/CEO <a href=\"http:\/\/App.net\">App.net<\/a> \r\nBlog: <a href=\"http:\/\/daltoncaldwell.com\">daltoncaldwell.com<\/a><\/span>",
@@ -108,5 +108,12 @@ func TestPostDecode(t *testing.T) {
 	p := &Post{}
 	if err := json.Unmarshal(testPostData, p); err != nil {
 		t.Error("json.Unmarshal(testPostData)", err)
+	}
+}
+
+func TestPostGet(t *testing.T) {
+	p := &Post{}
+	if err := p.Get("511604"); err != nil {
+		t.Error("getting post", err)
 	}
 }
