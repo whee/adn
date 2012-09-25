@@ -5,9 +5,9 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	p := &Post{}
-	if err := p.Get("511604"); err != nil {
-		t.Error(`Post.Get("511604")`, err)
+	p, err := GetPost("511604")
+	if err != nil {
+		t.Error(`GetPost("511604")`, err)
 	}
 
 	if p.User.Username != "whee" {

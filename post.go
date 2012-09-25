@@ -38,6 +38,12 @@ type Source struct {
 	Link string `json:"link"`
 }
 
-func (p *Post) Get(id string) error {
-	return epExecuteGet("retrieve post", epArgs{Post: id}, p)
+func (c *Application) GetPost(id string) (p *Post, err error) {
+	p = &Post{}
+	err = c.Get(nil, "retrieve post", EpArgs{Post: id}, p)
+	return
+}
+
+func GetPost(id string) (*Post, error) {
+	return DefaultApplication.GetPost(id)
 }

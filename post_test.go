@@ -112,8 +112,7 @@ func TestPostDecode(t *testing.T) {
 }
 
 func TestPostGet(t *testing.T) {
-	p := &Post{}
-	if err := p.Get("511604"); err != nil {
+	if _, err := GetPost("511604"); err != nil {
 		t.Error("getting post", err)
 	}
 }

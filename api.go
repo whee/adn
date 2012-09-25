@@ -1,12 +1,7 @@
 package adn
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"text/template"
 )
 
@@ -77,7 +72,7 @@ var apiEndpoints = map[string]endpoint{
 	"delete filter":                 {httpGet, "/stream/0/filters/{{.Filter}}"},
 }
 
-type epArgs struct {
+type EpArgs struct {
 	User, Post, Hashtag, Stream, Subscription, Filter string
 }
 
@@ -104,56 +99,4 @@ type APIError responseMeta
 
 func (e APIError) Error() string {
 	return fmt.Sprintf("%d: %s (%s)", e.Code, e.ErrorMessage, e.ErrorId)
-}
-
-var apiClient = &http.Client{}
-
-func epExecute(name string, args epArgs) (body io.ReadCloser, err error) {
-	var path bytes.Buffer
-
-	err = epTemplates.ExecuteTemplate(&path, name, args)
-	if err != nil {
-		return
-	}
-
-	method := apiEndpoints[name].Method
-	url := apiHost + path.String()
-	req, err := http.NewRequest(string(method), url, nil)
-	if err != nil {
-		return
-	}
-	req.Header.Add("X-ADN-Migration-Overrides", "response_envelope=1")
-
-	resp, err := apiClient.Do(req)
-	if err != nil {
-		return
-	}
-	body = resp.Body
-
-	return
-}
-
-func epExecuteGet(name string, args epArgs, v interface{}) error {
-	body, err := epExecute(name, args)
-	if err != nil {
-		return err
-	}
-	defer body.Close()
-
-	resp, err := ioutil.ReadAll(body)
-	if err != nil {
-		return err
-	}
-
-	re := &responseEnvelope{Data: v}
-	err = json.Unmarshal(resp, re)
-	if err != nil {
-		return err
-	}
-
-	if re.Meta.ErrorId != "" {
-		return APIError(re.Meta)
-	}
-
-	return err
 }

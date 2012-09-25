@@ -42,6 +42,12 @@ type Counts struct {
 }
 
 // Get will not actually work until authentication is implemented.
-func (u *User) Get(id string) error {
-	return epExecuteGet("retrieve user", epArgs{User: id}, u)
+func (c *Application) GetUser(id string) (u *User, err error) {
+	u = &User{}
+	err = c.Get(nil, "retrieve user", EpArgs{User: id}, u)
+	return
+}
+
+func GetUser(id string) (*User, error) {
+	return DefaultApplication.GetUser(id)
 }
