@@ -7,55 +7,50 @@ package adn
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 type Application struct {
 	Id          string
 	Secret      string
 	RedirectURI string
-	Scopes      []Scope
+	Scopes      Scopes
 }
-
-type UserAccess struct {
-	Token  string
-	Scopes []Scope
-}
-
-type Scope string
-
-const (
-	ScopeBasic     Scope = "basic"
-	ScopeStream          = "stream"
-	ScopeEmail           = "email"
-	ScopeWritePost       = "write_post"
-	ScopeFollow          = "follow"
-	ScopeMessages        = "messages"
-	ScopeExport          = "export"
-)
 
 var DefaultApplication = &Application{}
 var apiHttpClient = &http.Client{}
 
-func (c *Application) Do(ua *UserAccess, name string, args EpArgs) (body io.ReadCloser, err error) {
+type Request struct {
+	Token    string    // Authentication token for the user or ""
+	Body     io.Reader // Data for the body
+	BodyType string    // Value for the Content-Type header
+}
+
+func (c *Application) request(r *Request, name string, args EpArgs) (body io.ReadCloser, err error) {
 	var path bytes.Buffer
 	err = epTemplates.ExecuteTemplate(&path, name, args)
 	if err != nil {
 		return
 	}
 
-	method := apiEndpoints[name].Method
-	url := apiHost + path.String()
-	req, err := http.NewRequest(string(method), url, nil)
+	ep := apiEndpoints[name]
+	url := path.String()
+	req, err := http.NewRequest(string(ep.Method), url, r.Body)
 	if err != nil {
 		return
 	}
-	req.Header.Add("X-ADN-Migration-Overrides", "response_envelope=1")
 
-	if ua != nil && ua.Token != "" {
-		req.Header.Add("Authorization", "Bearer " + ua.Token)
+	req.Header.Set("X-ADN-Migration-Overrides", "response_envelope=1")
+	if r.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+r.Token)
+	}
+	if r.BodyType != "" {
+		req.Header.Set("Content-Type", r.BodyType)
 	}
 
 	resp, err := apiHttpClient.Do(req)
@@ -67,8 +62,8 @@ func (c *Application) Do(ua *UserAccess, name string, args EpArgs) (body io.Read
 	return
 }
 
-func (c *Application) Get(ua *UserAccess, name string, args EpArgs, v interface{}) error {
-	body, err := c.Do(ua, name, args)
+func (c *Application) Do(r *Request, name string, args EpArgs, v interface{}) error {
+	body, err := c.request(r, name, args)
 	if err != nil {
 		return err
 	}
@@ -79,15 +74,66 @@ func (c *Application) Get(ua *UserAccess, name string, args EpArgs, v interface{
 		return err
 	}
 
-	re := &responseEnvelope{Data: v}
-	err = json.Unmarshal(resp, re)
-	if err != nil {
-		return err
-	}
+	epOptions := apiEndpoints[name].Options
+	if epOptions == nil || epOptions.ResponseEnvelope {
+		re := &responseEnvelope{Data: v}
+		err = json.Unmarshal(resp, re)
+		if err != nil {
+			return err
+		}
 
-	if re.Meta.ErrorId != "" {
-		return APIError(re.Meta)
+		if re.Meta.ErrorId != "" {
+			return APIError(re.Meta)
+		}
+	} else {
+		err = json.Unmarshal(resp, v)
+		if err != nil {
+			return err
+		}
 	}
 
 	return err
+}
+
+func (c *Application) AuthenticationURL(state string) (string, error) {
+	var url bytes.Buffer
+	args := struct {
+		*Application
+		State string
+	}{c, state}
+	err := epTemplates.ExecuteTemplate(&url, "authentication url", args)
+	if err != nil {
+		return "", err
+	}
+	return url.String(), nil
+}
+
+func (c *Application) AccessToken(code string) (string, error) {
+	data := url.Values{}
+	data.Set("client_id", c.Id)
+	data.Set("client_secret", c.Secret)
+	data.Set("grant_type", "authorization_code")
+	data.Set("redirect_uri", c.RedirectURI)
+	data.Set("code", code)
+
+	r := &Request{
+		Body:     strings.NewReader(data.Encode()),
+		BodyType: "application/x-www-form-urlencoded",
+	}
+
+	//{"error": "This code has already been used."}
+	//{"access_token": "x", "username": "whee", "user_id": 19058}
+
+	resp := &struct {
+		AccessToken string `json:"access_token"`
+		Error       string
+	}{}
+	err := c.Do(r, "get access token", EpArgs{}, resp)
+	if err != nil {
+		return "", err
+	}
+	if resp.Error != "" {
+		return "", errors.New(resp.Error)
+	}
+	return resp.AccessToken, nil
 }

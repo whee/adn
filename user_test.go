@@ -77,7 +77,7 @@ func TestUserDecode(t *testing.T) {
 
 func TestUserGet(t *testing.T) {
 	// Not authenticated. This should fail.
-	_, err := GetUser("@whee")
+	_, err := GetUser("", "@whee")
 	if err == nil {
 		t.Error("unauthenticated GetUser() should have failed", err)
 	}

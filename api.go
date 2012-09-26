@@ -9,7 +9,10 @@ import (
 	"text/template"
 )
 
-const apiHost = "https://alpha-api.app.net"
+const (
+	apiHost     = "https://alpha-api.app.net"
+	apiAuthHost = "https://alpha.app.net"
+)
 
 type httpMethod string
 
@@ -20,64 +23,73 @@ const (
 )
 
 type endpoint struct {
-	Method httpMethod
-	Path   string
+	Method  httpMethod
+	Path    string
+	Options *epOptions
 }
 
 var apiEndpoints = map[string]endpoint{
 	// Users
-	"retrieve user":        {httpGet, "/stream/0/users/{{.User}}"},
-	"follow user":          {httpPost, "/stream/0/users/{{.User}}/follow"},
-	"unfollow user":        {httpDelete, "/stream/0/users/{{.User}}/follow"},
-	"list followed users":  {httpGet, "/stream/0/users/{{.User}}/following"},
-	"list following users": {httpGet, "/stream/0/users/{{.User}}/followers"},
-	"mute user":            {httpPost, "/stream/0/users/{{.User}}/mute"},
-	"unmute user":          {httpDelete, "/stream/0/users/{{.User}}/mute"},
-	"list muted users":     {httpGet, "/stream/0/users/me/muted"},
-	"list reposters":       {httpGet, "/stream/0/posts/{{.Post}}/reposters"},
-	"list starrers":        {httpGet, "/stream/0/posts/{{.Post}}/star"},
+	"retrieve user":        {httpGet, apiHost + "/stream/0/users/{{.User}}", nil},
+	"follow user":          {httpPost, apiHost + "/stream/0/users/{{.User}}/follow", nil},
+	"unfollow user":        {httpDelete, apiHost + "/stream/0/users/{{.User}}/follow", nil},
+	"list followed users":  {httpGet, apiHost + "/stream/0/users/{{.User}}/following", nil},
+	"list following users": {httpGet, apiHost + "/stream/0/users/{{.User}}/followers", nil},
+	"mute user":            {httpPost, apiHost + "/stream/0/users/{{.User}}/mute", nil},
+	"unmute user":          {httpDelete, apiHost + "/stream/0/users/{{.User}}/mute", nil},
+	"list muted users":     {httpGet, apiHost + "/stream/0/users/me/muted", nil},
+	"list reposters":       {httpGet, apiHost + "/stream/0/posts/{{.Post}}/reposters", nil},
+	"list starrers":        {httpGet, apiHost + "/stream/0/posts/{{.Post}}/star", nil},
 
 	// Tokens
-	"check current token": {httpGet, "/stream/0/token"},
+	"check current token": {httpGet, apiHost + "/stream/0/token", nil},
 
 	// Posts
-	"create post":                       {httpPost, "/stream/0/posts"},
-	"retrieve post":                     {httpGet, "/stream/0/posts/{{.Post}}"},
-	"delete post":                       {httpDelete, "/stream/0/posts/{{.Post}}"},
-	"retrieve post replies":             {httpGet, "/stream/0/posts/{{.Post}}/replies"},
-	"retrieve user posts":               {httpGet, "/stream/0/users/{{.User}}/posts"},
-	"repost post":                       {httpPost, "/stream/0/posts/{{.Post}}/repost"},
-	"unrepost post":                     {httpDelete, "/stream/0/posts/{{.Post}}/repost"},
-	"star post":                         {httpPost, "/stream/0/posts/{{.Post}}/star"},
-	"unstar post":                       {httpDelete, "/stream/0/posts/{{.Post}}/star"},
-	"retrieve user starred posts":       {httpGet, "/stream/0/users/{{.User}}/stars"},
-	"retrieve posts mentioning user":    {httpGet, "/stream/0/users/{{.User}}/mentions"},
-	"retrieve user personalized stream": {httpGet, "/stream/0/posts/stream"},
-	"retrieve global stream":            {httpGet, "/stream/0/posts/stream/global"},
-	"retrieve tagged posts":             {httpGet, "/stream/0/posts/tag/{{.Hashtag}}"},
+	"create post":                       {httpPost, apiHost + "/stream/0/posts", nil},
+	"retrieve post":                     {httpGet, apiHost + "/stream/0/posts/{{.Post}}", nil},
+	"delete post":                       {httpDelete, apiHost + "/stream/0/posts/{{.Post}}", nil},
+	"retrieve post replies":             {httpGet, apiHost + "/stream/0/posts/{{.Post}}/replies", nil},
+	"retrieve user posts":               {httpGet, apiHost + "/stream/0/users/{{.User}}/posts", nil},
+	"repost post":                       {httpPost, apiHost + "/stream/0/posts/{{.Post}}/repost", nil},
+	"unrepost post":                     {httpDelete, apiHost + "/stream/0/posts/{{.Post}}/repost", nil},
+	"star post":                         {httpPost, apiHost + "/stream/0/posts/{{.Post}}/star", nil},
+	"unstar post":                       {httpDelete, apiHost + "/stream/0/posts/{{.Post}}/star", nil},
+	"retrieve user starred posts":       {httpGet, apiHost + "/stream/0/users/{{.User}}/stars", nil},
+	"retrieve posts mentioning user":    {httpGet, apiHost + "/stream/0/users/{{.User}}/mentions", nil},
+	"retrieve user personalized stream": {httpGet, apiHost + "/stream/0/posts/stream", nil},
+	"retrieve global stream":            {httpGet, apiHost + "/stream/0/posts/stream/global", nil},
+	"retrieve tagged posts":             {httpGet, apiHost + "/stream/0/posts/tag/{{.Hashtag}}", nil},
 
 	// Streams
-	"retrieve realtime user personalized stream":          {httpGet, "/stream/0/streams/user"},
-	"retrieve realtime multiple user personalized stream": {httpGet, "/stream/0/streams/app"},
-	"retrieve realtime public stream":                     {httpGet, "/stream/0/streams/public"},
-	"retrieve stream status":                              {httpGet, "/stream/0/streams/{{.Stream}}"},
-	"control stream":                                      {httpPost, "/stream/0/streams/{{.Stream}}"},
+	"retrieve realtime user personalized stream":          {httpGet, apiHost + "/stream/0/streams/user", nil},
+	"retrieve realtime multiple user personalized stream": {httpGet, apiHost + "/stream/0/streams/app", nil},
+	"retrieve realtime public stream":                     {httpGet, apiHost + "/stream/0/streams/public", nil},
+	"retrieve stream status":                              {httpGet, apiHost + "/stream/0/streams/{{.Stream}}", nil},
+	"control stream":                                      {httpPost, apiHost + "/stream/0/streams/{{.Stream}}", nil},
 
 	// Real-time updates
-	"list subscriptions":       {httpGet, "/stream/0/subscriptions"},
-	"create subscription":      {httpPost, "/stream/0/subscriptions"},
-	"delete subscription":      {httpDelete, "/stream/0/subscriptions/{{.Subscription}}"},
-	"delete all subscriptions": {httpDelete, "/stream/0/subscriptions"},
+	"list subscriptions":       {httpGet, apiHost + "/stream/0/subscriptions", nil},
+	"create subscription":      {httpPost, apiHost + "/stream/0/subscriptions", nil},
+	"delete subscription":      {httpDelete, apiHost + "/stream/0/subscriptions/{{.Subscription}}", nil},
+	"delete all subscriptions": {httpDelete, apiHost + "/stream/0/subscriptions", nil},
 
 	// Filters
-	"retrieve current user filters": {httpGet, "/stream/0/filters"},
-	"create filter":                 {httpPost, "/stream/0/filters"},
-	"retrieve filter":               {httpGet, "/stream/0/filters/{{.Filter}}"},
-	"delete filter":                 {httpGet, "/stream/0/filters/{{.Filter}}"},
+	"retrieve current user filters": {httpGet, apiHost + "/stream/0/filters", nil},
+	"create filter":                 {httpPost, apiHost + "/stream/0/filters", nil},
+	"retrieve filter":               {httpGet, apiHost + "/stream/0/filters/{{.Filter}}", nil},
+	"delete filter":                 {httpGet, apiHost + "/stream/0/filters/{{.Filter}}", nil},
+
+	// Authentication (Server-side flow)
+	"authentication url": {httpGet, apiAuthHost + "/oauth/authenticate?client_id={{urlquery .Id}}&response_type=code&redirect_uri={{urlquery .RedirectURI}}&scope={{urlquery .Scopes.Spaced}}{{if .State}}&state={{urlquery .State}}{{end}}", nil},
+	"get access token":   {httpPost, apiAuthHost + "/oauth/access_token", &epOptions{ResponseEnvelope: false}},
 }
 
 type EpArgs struct {
 	User, Post, Hashtag, Stream, Subscription, Filter string
+}
+
+type epOptions struct {
+	ResponseEnvelope bool // Do we expect a response envelope?
 }
 
 var epTemplates = new(template.Template)
