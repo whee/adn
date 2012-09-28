@@ -10,6 +10,11 @@ The usual:
 
 	$ go get github.com/whee/adn
 
+Package documentation
+---------------------
+
+[godoc output courtesy of GoPkgDoc](http://go.pkgdoc.org/github.com/whee/adn)
+
 Example usage
 -------------
 
