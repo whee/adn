@@ -38,6 +38,7 @@ var apiEndpoints = map[string]endpoint{
 	"mute user":            {httpPost, apiHost + "/stream/0/users/{{.User}}/mute", nil},
 	"unmute user":          {httpDelete, apiHost + "/stream/0/users/{{.User}}/mute", nil},
 	"list muted users":     {httpGet, apiHost + "/stream/0/users/me/muted", nil},
+	"search for users":     {httpGet, apiHost + "/stream/0/users/search", nil},
 	"list reposters":       {httpGet, apiHost + "/stream/0/posts/{{.Post}}/reposters", nil},
 	"list starrers":        {httpGet, apiHost + "/stream/0/posts/{{.Post}}/star", nil},
 
