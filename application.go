@@ -38,7 +38,7 @@ func (c *Application) request(r *Request, name string, args EpArgs) (body io.Rea
 		return
 	}
 
-	ep := apiEndpoints[name]
+	ep := ApiEndpoints[name]
 	url := path.String()
 	req, err := http.NewRequest(string(ep.Method), url, r.Body)
 	if err != nil {
@@ -62,6 +62,13 @@ func (c *Application) request(r *Request, name string, args EpArgs) (body io.Rea
 	return
 }
 
+// Do handles all API requests.
+// The Request contains the authentication token and optional body.
+// The name comes from ApiEndpoints, with template arguments provided in args.
+// The response is unpacked into v.
+//
+// In the future, you would not call this function directly, instead using a helper
+// function for the specific action.
 func (c *Application) Do(r *Request, name string, args EpArgs, v interface{}) error {
 	body, err := c.request(r, name, args)
 	if err != nil {
@@ -74,7 +81,7 @@ func (c *Application) Do(r *Request, name string, args EpArgs, v interface{}) er
 		return err
 	}
 
-	epOptions := apiEndpoints[name].Options
+	epOptions := ApiEndpoints[name].Options
 	if epOptions == nil || epOptions.ResponseEnvelope {
 		re := &responseEnvelope{Data: v}
 		err = json.Unmarshal(resp, re)
@@ -95,6 +102,7 @@ func (c *Application) Do(r *Request, name string, args EpArgs, v interface{}) er
 	return err
 }
 
+// Generate the authentication URL for the server-side flow.
 func (c *Application) AuthenticationURL(state string) (string, error) {
 	var url bytes.Buffer
 	args := struct {
@@ -108,6 +116,9 @@ func (c *Application) AuthenticationURL(state string) (string, error) {
 	return url.String(), nil
 }
 
+// During server-side flow, the user will be redirected back with a code.
+// AccessToken uses this code to request an access token for the user.
+// This token is returned as a string.
 func (c *Application) AccessToken(code string) (string, error) {
 	data := url.Values{}
 	data.Set("client_id", c.Id)

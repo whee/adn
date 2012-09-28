@@ -28,7 +28,7 @@ type endpoint struct {
 	Options *epOptions
 }
 
-var apiEndpoints = map[string]endpoint{
+var ApiEndpoints = map[string]endpoint{
 	// Users
 	"retrieve user":        {httpGet, apiHost + "/stream/0/users/{{.User}}", nil},
 	"follow user":          {httpPost, apiHost + "/stream/0/users/{{.User}}/follow", nil},
@@ -85,6 +85,7 @@ var apiEndpoints = map[string]endpoint{
 	"get access token":   {httpPost, apiAuthHost + "/oauth/access_token", &epOptions{ResponseEnvelope: false}},
 }
 
+// These fields are used to fill the endpoint template.
 type EpArgs struct {
 	User, Post, Hashtag, Stream, Subscription, Filter string
 }
@@ -96,7 +97,7 @@ type epOptions struct {
 var epTemplates = new(template.Template)
 
 func init() {
-	for k, v := range apiEndpoints {
+	for k, v := range ApiEndpoints {
 		template.Must(epTemplates.New(k).Parse(v.Path))
 	}
 }
@@ -112,6 +113,7 @@ type responseMeta struct {
 	ErrorMessage string `json:"error_message"`
 }
 
+// Represents errors returned by ADN as a result of an API call.
 type APIError responseMeta
 
 func (e APIError) Error() string {
