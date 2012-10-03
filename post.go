@@ -23,7 +23,7 @@ type Post struct {
 	NumStars   int `json:"num_stars"`   // The number of users who have starred this post.
 	NumReposts int `json:"num_reposts"` // The number of users who have reposted this post.
 
-	Annotations []interface{} `json:"annotations"` // TODO implement
+	Annotations []interface{} `json:"annotations,omitempty"` // TODO implement
 
 	Entities Entities `json:"entities"`
 
