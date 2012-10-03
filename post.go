@@ -9,14 +9,15 @@ import (
 )
 
 type Post struct {
-	Id        string    `json:"id"`
-	User      User      `json:"user"`       // Embedded version of the User object. May not exist if the account has since been deleted.
-	CreatedAt time.Time `json:"created_at"` // The time at which the post was created.
-	Text      string    `json:"text"`       // User supplied text of the post.
-	HTML      string    `json:"html"`       // Server-generated annotated HTML rendering of the post text.
-	Source    Source    `json:"source"`
-	ReplyTo   string    `json:"reply_to"`  // Id of the post this post is replying to (or "" if not a reply).
-	ThreadId  string    `json:"thread_id"` // Id of the post at the root of the thread this post is a part of.
+	Id           string    `json:"id"`
+	User         User      `json:"user"`       // Embedded version of the User object. May not exist if the account has since been deleted.
+	CreatedAt    time.Time `json:"created_at"` // The time at which the post was created.
+	Text         string    `json:"text"`       // User supplied text of the post.
+	HTML         string    `json:"html"`       // Server-generated annotated HTML rendering of the post text.
+	Source       Source    `json:"source"`
+	ReplyTo      string    `json:"reply_to"`      // Id of the post this post is replying to (or "" if not a reply).
+	ThreadId     string    `json:"thread_id"`     // Id of the post at the root of the thread this post is a part of.
+	CanonicalURL string    `json:"canonical_url"` // The URL of the post's detail page on Alpha.
 
 	NumReplies int `json:"num_replies"` // The number of posts created in reply to this post.
 	NumStars   int `json:"num_stars"`   // The number of users who have starred this post.
