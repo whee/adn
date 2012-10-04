@@ -1,0 +1,64 @@
+* Endpoint testing
+
+In the interest of decent test coverage and figuring out what this package
+is missing, here's a list of every endpoint that needs to be tested.
+Some of these may be already tested, but we're going assume not.
+
+** Users
+*** TODO "retrieve user"
+*** TODO "follow user"
+*** TODO "unfollow user"
+*** TODO "list followed users"
+*** TODO "list following users"
+*** TODO "mute user"
+*** TODO "unmute user"
+*** TODO "list muted users"
+*** TODO "search for users"
+*** TODO "list reposters"
+*** TODO "list starrers"
+
+** Tokens
+*** TODO "check current token"
+
+** Posts
+*** TODO "create post"
+*** TODO "retrieve post"
+*** TODO "delete post"
+*** TODO "retrieve post replies"
+*** TODO "retrieve user posts"
+*** TODO "repost post"
+*** TODO "unrepost post"
+*** TODO "star post"
+*** TODO "unstar post"
+*** TODO "retrieve user starred posts"
+*** TODO "retrieve posts mentioning user"
+*** TODO "retrieve user personalized stream"
+*** TODO "retrieve global stream"
+*** TODO "retrieve tagged posts"
+
+** Streams
+*** TODO "retrieve realtime user personalized stream"
+*** TODO "retrieve realtime multiple user personalized stream"
+*** TODO "retrieve realtime public stream"
+*** TODO "retrieve stream status"
+*** TODO "control stream"
+
+** Real-time updates
+*** TODO "list subscriptions"
+*** TODO "create subscription"
+*** TODO "delete subscription"
+*** TODO "delete all subscriptions"
+
+** Filters
+*** TODO "retrieve current user filters"
+*** TODO "create filter"
+*** TODO "retrieve filter"
+*** TODO "delete filter"
+
+** Authentication (Server-side flow)
+*** TODO "authentication url"
+*** TODO "get access token"
+
+* TODO Resource versioning
+
+Just flag all the structs with the api spec revision they're based on.
