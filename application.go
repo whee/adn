@@ -147,6 +147,9 @@ func (c *Application) AccessToken(code string) (string, error) {
 	return resp.AccessToken, nil
 }
 
+// PasswordToken is used to carry out the password flow. The function submits
+// the username and password to get an access token. This token is returned
+// as a string.
 func (c *Application) PasswordToken(username, password string) (string, error) {
 	data := url.Values{}
 	data.Set("client_id", c.Id)
