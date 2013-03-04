@@ -157,7 +157,7 @@ func (c *Application) PasswordToken(username, password string) (string, error) {
 	data.Set("grant_type", "password")
 	data.Set("username", username)
 	data.Set("password", password)
-	data.Set("scopes", c.Scopes.Spaced())
+	data.Set("scope", c.Scopes.Spaced())
 
 	r := &Request{
 		Body:     strings.NewReader(data.Encode()),
