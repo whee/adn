@@ -16,10 +16,11 @@ import (
 )
 
 type Application struct {
-	Id          string
-	Secret      string
-	RedirectURI string
-	Scopes      Scopes
+	Id             string
+	Secret         string
+	RedirectURI    string
+	Scopes         Scopes
+	PasswordSecret string
 }
 
 var DefaultApplication = &Application{}
@@ -132,8 +133,36 @@ func (c *Application) AccessToken(code string) (string, error) {
 		BodyType: "application/x-www-form-urlencoded",
 	}
 
-	//{"error": "This code has already been used."}
-	//{"access_token": "x", "username": "whee", "user_id": 19058}
+	resp := &struct {
+		AccessToken string `json:"access_token"`
+		Error       string
+	}{}
+	err := c.Do(r, "get access token", EpArgs{}, resp)
+	if err != nil {
+		return "", err
+	}
+	if resp.Error != "" {
+		return "", errors.New(resp.Error)
+	}
+	return resp.AccessToken, nil
+}
+
+// PasswordToken is used to carry out the password flow. The function submits
+// the username and password to get an access token. This token is returned
+// as a string.
+func (c *Application) PasswordToken(username, password string) (string, error) {
+	data := url.Values{}
+	data.Set("client_id", c.Id)
+	data.Set("password_grant_secret", c.PasswordSecret)
+	data.Set("grant_type", "password")
+	data.Set("username", username)
+	data.Set("password", password)
+	data.Set("scope", c.Scopes.Spaced())
+
+	r := &Request{
+		Body:     strings.NewReader(data.Encode()),
+		BodyType: "application/x-www-form-urlencoded",
+	}
 
 	resp := &struct {
 		AccessToken string `json:"access_token"`
